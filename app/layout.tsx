@@ -1,12 +1,12 @@
-export const metadata: Metadata = {
+export const metadata = {
   title: 'Bolão da Copa',
-  description: 'App para gerenciar seu bolão da Copa do Mundo',
-}
+  description: 'Gerencie seus palpites',
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <html lang="pt-BR">
@@ -14,5 +14,5 @@ export default function RootLayout({
         {children}
       </body>
     </html>
-  )
+  );
 }
