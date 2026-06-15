@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bolão Copa 2026</title>
+  
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#4f46e5">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+    body { background-color: #f3f4f6; color: #1f2937; padding: 15px; display: flex; flex-direction: column; align-items: center; }
+    header { text-align: center; margin: 20px 0; color: #4f46e5; }
+    .card { background: white; border-radius: 12px; padding: 20px; width: 100%; max-width: 400px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    h2 { font-size: 1.2rem; margin-bottom: 15px; border-bottom: 2px solid #f3f4f6; padding-bottom: 5px; }
+    .form-group { margin-bottom: 12px; display: flex; flex-direction: column; }
+    label { font-size: 0.85rem; font-weight: bold; margin-bottom: 4px; }
+    input, button { padding: 10px; border-radius: 6px; border: 1px solid #d1d5db; font-size: 1rem; }
+    button { background: #4f46e5; color: white; border: none; font-weight: bold; cursor: pointer; margin-top: 5px; }
+    button:hover { background: #4338ca; }
+    .match-row { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
+    .match-input { width: 50px; text-align: center; }
+    .leaderboard-list { list-style: none; }
+    .leaderboard-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f3f4f6; }
+    .badge { background: #10b981; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🏆 Bolão Copa 2026</h1>
+    <p>Simulador Estatístico PWA</p>
+  </header>
+
+  <div class="card" id="login-card">
+    <h2>👤 Identificação do Usuário</h2>
+    <div class="form-group">
+      <label for="username">Seu Nome / Apelido:</label>
+      <input type="text" id="username" placeholder="Ex: Ney_Mitou">
+    </div>
+    <button onclick="loginUser()">Entrar no Bolão</button>
+  </div>
+
+  <div class="card" id="bet-card" style="display: none;">
+    <h2>⚽ Registrar Palpite</h2>
+    <p style="font-size: 0.85rem; color: #6b7280; margin-bottom: 10px;">Jogo: <strong>Brasil vs França</strong></p>
+    <div class="match-row">
+      <span>🇧🇷 Brasil</span>
+      <input type="number" id="scoreA" class="match-input" min="0" value="0">
+      <span>X</span>
+      <input type="number" id="scoreB" class="match-input" min="0" value="0">
+      <span>França 🇫🇷</span>
+    </div>
+    <button onclick="saveBet()" style="width: 100%; margin-top: 15px;">Salvar Meu Palpite</button>
+    <p id="bet-status" style="font-size: 0.85rem; color: #10b981; margin-top: 10px; text-align: center;"></p>
+  </div>
+
+  <div class="card">
+    <h2>📊 Ranking Geral</h2>
+    <ul class="leaderboard-list" id="leaderboard">
+      </ul>
+    <hr style="margin: 15px 0; border: none; border-top: 1px solid #f3f4f6;">
+    <button onclick="simulateMatchFinish()" style="background: #ef4444; width: 100%;">⚙️ Simular Fim do Jogo (2x1)</button>
+  </div>
+
+  <script>
+    // Banco de Dados Simulado no navegador (LocalStorage) para persistir os dados do teste
+    let currentUser = localStorage.getItem('bolao_user') || '';
+    let db = JSON.parse(localStorage.getItem('bolao_db')) || {
+      bets: {}, // { username: { guessA, guessB } }
+      users: { "Mestre do Capital": 10, "Pé Frio": 0 } // Usuários simulados e seus pontos
+    };
+
+    // Interface Inicial
+    if (currentUser) {
+      document.getElementById('login-card').style.display = 'none';
+      document.getElementById('bet-card').style.display = 'block';
+      // Carrega palpite anterior se houver
+      if(db.bets[currentUser]) {
+        document.getElementById('scoreA').value = db.bets[currentUser].guessA;
+        document.getElementById('scoreB').value = db.bets[currentUser].guessB;
+        document.getElementById('bet-status').innerText = "Você já palpitou neste jogo!";
+      }
+    }
+
+    function loginUser() {
+      const name = document.getElementById('username').value.trim();
+      if (!name) return alert('Digite um nome!');
+      currentUser = name;
+      localStorage.setItem('bolao_user', name);
+      if (!db.users[name]) db.users[name] = 0; // Novo usuário começa com 0
+      saveDB();
+      document.getElementById('login-card').style.display = 'none';
+      document.getElementById('bet-card').style.display = 'block';
+      renderLeaderboard();
+    }
+
+    function saveBet() {
+      if (!currentUser) return alert('Faça login primeiro!');
+      const guessA = parseInt(document.getElementById('scoreA').value) || 0;
+      const guessB = parseInt(document.getElementById('scoreB').value) || 0;
+
+      db.bets[currentUser] = { guessA, guessB };
+      saveDB();
+      document.getElementById('bet-status').innerText = `Palpite salvo: Brasil ${guessA} x ${guessB} França!`;
+    }
+
+    // Regra Sênior do Motor de Pontos
+    function simulateMatchFinish() {
+      const realA = 2; // Resultado simulado: Brasil 2
+      const realB = 1; // Resultado simulado: França 1
+
+      alert(`O jogo acabou! Placar Oficial: Brasil ${realA} x ${realB} França.\nProcessando pontos dos usuários...`);
+
+      for (let user in db.bets) {
+        const guess = db.bets[user];
+        let points = 0;
+
+        if (guess.guessA === realA && guess.guessB === realB) {
+          points = 10; // Placar Exato
+        } else if (Math.sign(guess.guessA - guess.guessB) === Math.sign(realA - realB)) {
+          points = 5;  // Acertou o Ganhador
+        }
+
+        db.users[user] = points;
+      }
+
+      saveDB();
+      renderLeaderboard();
+    }
+
+    function saveDB() {
+      localStorage.setItem('bolao_db', JSON.stringify(db));
+    }
+
+    function renderLeaderboard() {
+      const list = document.getElementById('leaderboard');
+      list.innerHTML = '';
+      
+      // Ordena usuários por pontos
+      const sorted = Object.entries(db.users).sort((a, b) => b[1] - a[1]);
+
+      sorted.forEach(([name, points], index) => {
+        list.innerHTML += `
+          <li class="leaderboard-item">
+            <span>${index + 1}° ${name} ${name === currentUser ? '<strong>(Você)</strong>' : ''}</span>
+            <span class="badge">${points} pts</span>
+          </li>
+        `;
+      });
+    }
+
+    // Registro do Service Worker do PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js');
+      });
+    }
+
+    // Renderiza o ranking inicial
+    renderLeaderboard();
+  </script>
+</body>
+</html>
