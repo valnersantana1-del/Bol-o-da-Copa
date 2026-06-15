@@ -69,7 +69,7 @@ export default function Home() {
 
     const { error } = await supabase.from('palpites').upsert({
       user_id: user.id,
-      jogo_id: juego.id,
+      jogo_id: jogo.id,
       palpite_a: scoreA,
       palpite_b: scoreB
     }, { onConflict: 'user_id,jogo_id' });
@@ -133,13 +133,64 @@ export default function Home() {
   );
 }
 
-const styles = {
-  container: { fontFamily: 'sans-serif', backgroundColor: '#f3f4f6', minHeight: '100vh', padding: '15px', display: 'flex', flexDirection: 'column', alignItems: 'center' } as any,
-  card: { backgroundColor: 'white', borderRadius: '12px', padding: '20px', width: '100%', maxWidth: '400px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', marginBottom: '20px' },
-  input: { padding: '10px', width: '100%', borderRadius: '6px', border: '1px solid #d1d5db', marginBottom: '10px' },
-  button: { background: '#4f46e5', color: 'white', padding: '10px', border: 'none', borderRadius: '6px', width: '100%', fontWeight: 'bold', cursor: 'pointer' } as any,
-  matchRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '15px 0' },
-  matchInput: { width: '50px', text-align: 'center', padding: '5px' } as any,
-  rankItem: { display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #f3f4f6' },
-  badge: { background: '#10b981', color: 'white', padding: '2px 8px', borderRadius: '12px', fontSize: '0.8rem' }
+const styles: { [key: string]: React.CSSProperties } = {
+  container: {
+    fontFamily: 'sans-serif',
+    backgroundColor: '#f3f4f6',
+    minHeight: '100vh',
+    padding: '15px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center'
+  },
+  card: {
+    backgroundColor: 'white',
+    borderRadius: '12px',
+    padding: '20px',
+    width: '100%',
+    maxWidth: '400px',
+    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+    marginBottom: '20px'
+  },
+  input: {
+    padding: '10px',
+    width: '100%',
+    borderRadius: '6px',
+    border: '1px solid #d1d5db',
+    marginBottom: '10px'
+  },
+  button: {
+    background: '#4f46e5',
+    color: 'white',
+    padding: '10px',
+    border: 'none',
+    borderRadius: '6px',
+    width: '100%',
+    fontWeight: 'bold',
+    cursor: 'pointer'
+  },
+  matchRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    margin: '15px 0'
+  },
+  matchInput: {
+    width: '50px',
+    textAlign: 'center',
+    padding: '5px'
+  },
+  rankItem: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    padding: '10px 0',
+    borderBottom: '1px solid #f3f4f6'
+  },
+  badge: {
+    background: '#10b981',
+    color: 'white',
+    padding: '2px 8px',
+    borderRadius: '12px',
+    fontSize: '0.8rem'
+  }
 };
